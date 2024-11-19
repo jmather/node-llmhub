@@ -3,8 +3,26 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "bin": {
+    "llmhub": "cli.js"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "private": true
+  "private": true,
+  "dependencies": {
+    "avj": "^0.0.0",
+    "chalk": "^5.3.0",
+    "child_process": "^1.0.2",
+    "cli": "^1.0.1",
+    "commander": "^12.1.0",
+    "debug": "^4.3.7",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "foreman": "^3.0.1",
+    "fs-extra": "^11.2.0",
+    "yaml": "^2.6.1",
+    "yamljs": "^0.3.0",
+    "yargs": "^17.7.2"
+  }
 }

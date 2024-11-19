@@ -2,7 +2,7 @@
 import configDotenv from "dotenv";
 import yamljs from "yamljs";
 import existsSync from "fs";
-import logger from "./logger";
+import logger from "./logger.js";
 configDotenv();
 
 

@@ -26,7 +26,7 @@ export default class EngineManager {
         }
 
         debug('Starting server...');
-        this.app = require('../server/server'); // Start server
+        this.app = require('../old/server/server.js'); // Start server
         // Start server
 
         port = this.proxy_port ? this.proxy_port : 8080;
