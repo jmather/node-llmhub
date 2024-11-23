@@ -25,8 +25,8 @@ class ConfigReader {
     }
 
     static saveConfig(file_path, config) {
+        const safe_file_path = expandUserPath(file_path);
         try {
-            const safe_file_path = expandUserPath(file_path);
             const yamlContent = YAML.stringify(config);
             fs.writeFileSync(safe_file_path, yamlContent, "utf8");
             console.log(`[Save] Config saved to ${safe_file_path}`);

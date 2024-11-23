@@ -19,11 +19,10 @@ engines:
     api_key_flag: "--api-key"
     file_types: [ gguf ]  # This engine only supports gguf files
   coreml:
-    path: /path/to/coreml_executable
+    path: /Users/user/coreml/executable
     arguments: --use-coreml
     model_flag: --model
     context_size_flag: --context
     port_flag: --port
     api_key_flag: "--api-key"
-    file_types: [coreml]  # CoreML uses `.mlmodel` files
-
+    file_types: [coreml]  # CoreML uses .mlmodel files

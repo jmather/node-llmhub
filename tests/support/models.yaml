@@ -1,0 +1,4 @@
+TheBloke/MythoMax-L2-13B-GGUF:
+  gguf:
+    Q4_K_M: /Users/user/.cache/lm-studio/models/TheBloke/MythoMax-L2-13B-GGUF/mythomax-l2-13b.Q4_K_M.gguf
+    Q5_K_M: /Users/user/.cache/lm-studio/models/TheBloke/MythoMax-L2-13B-GGUF/mythomax-l2-13b.Q5_K_M.gguf

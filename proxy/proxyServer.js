@@ -52,11 +52,15 @@ function start(port) {
     server.listen(port, () => {
         console.log(`Proxy server listening on port ${port}`);
     });
+
+    return server;
 }
 
 module.exports = { start };
 
-if (require.main === module) {
+console.log(process.argv)
+
+if (process.argv.length > 1 && __filename === process.argv[1]) {
     const port = parseInt(process.argv[2], 10);
     if (!port) {
         console.error("Usage: node proxyServer.js <port>");
