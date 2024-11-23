@@ -25,36 +25,34 @@ class ServiceManager {
         const expectedProcesses = generateExpectedProcesses(config);
         const runningProcesses = new Set(this.stateManager.listStates());
 
-        debug({ config, expectedProcesses, runningProcesses })
+        debug({ startAllServices: { config, expectedProcesses, runningProcesses } })
 
         for (const [processName, { cmd, port }] of Object.entries(expectedProcesses)) {
-            if (runningProcesses.has(processName)) {
-                const state = this.stateManager.loadState(processName);
-                const pids = getPidsOfPort(port);
+            const state = this.stateManager.loadState(processName);
+            const pids = getPidsOfPort(port);
 
-                debug({ processName, state, pids })
+            debug({ processName, state, pids })
 
-                if (state === null) {
-                    // not running
-                    console.log(`Starting process ${processName} on ${port}.`);
-                    this.processManager.startProcess(processName, cmd, port);
-                    continue;
-                }
-
-                const isServicePid = pids.indexOf(state.pid) !== -1;
-
-                if (state && pids.indexOf(state.pid) !== -1) {
-                    console.log(`Process ${processName} is already running.`);
-                    continue;
-                }
-
-                if (pids.length > 0) {
-                    console.log(`Port ${port} is occupied by another service.`);
-                    continue;
-                }
-
+            if (state === null) {
+                // not running
+                console.log(`Starting process ${processName} on ${port}.`);
                 this.processManager.startProcess(processName, cmd, port);
+                continue;
             }
+
+            const isServicePid = pids.indexOf(state.pid) !== -1;
+
+            if (state && pids.indexOf(state.pid) !== -1) {
+                console.log(`Process ${processName} is already running.`);
+                continue;
+            }
+
+            if (pids.length > 0) {
+                console.log(`Port ${port} is occupied by another service.`);
+                continue;
+            }
+
+            this.processManager.startProcess(processName, cmd, port);
         }
 
         console.log("All Services Started.");
@@ -123,7 +121,7 @@ class ServiceManager {
             const storedState = this.stateManager.loadState(processName);
             const isPortActive = checkPort(port)
             const portPids = getPidsOfPort(port)
-            const isProcessRunning = portPids && portPids.indexOf(storedState.pid) !== -1
+            const isProcessRunning = storedState && portPids && portPids.indexOf(storedState.pid) !== -1
             debug({ processName, isPortActive, isProcessRunning, portPids, storedState: storedState })
 
             if (isProcessRunning) {

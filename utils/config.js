@@ -1,28 +1,43 @@
 'use strict';
 import configDotenv from "dotenv";
-import yamljs from "yamljs";
-import existsSync from "fs";
-import logger from "./logger.js";
+import yaml from "yaml";
+import fs from "fs";
+import path from "path";
+import Ajv from "ajv";
+
 configDotenv();
 
+// Initialize Ajv and load the schema
+const ajv = new Ajv();
+const schemaPath = path.join(__dirname, '/../etc/config.schema.yaml');
+const schemaContent = fs.readFileSync(schemaPath, 'utf8');
+const schema = yaml.parse(schemaContent);
 
-const ajv = new Ajv()
-const schema = yamljs.parseFile(__dirname + '/../etc/config.schema.yaml');
-
-
+/**
+ * Load and validate the configuration file.
+ * @returns {Object} Parsed and validated configuration object.
+ * @throws Will throw an error if the config file is missing or invalid.
+ */
 export function loadConfig() {
-    config_path = __dirname + '/../../config.yaml';
-    if (! existsSync(config_path)) {
-        const err = Error('Config file not found');
-        err.context = config_path;
+    const configPath = path.join(__dirname, '/../../config.yaml');
+
+    // Check if the configuration file exists
+    if (!fs.existsSync(configPath)) {
+        const err = new Error('Config file not found');
+        err.context = configPath;
         throw err;
     }
+
     try {
-        const config = yamljs.parseFile(__dirname + '/../../config.yaml');
+        // Parse the configuration file
+        const configContent = fs.readFileSync(configPath, 'utf8');
+        const config = yaml.parse(configContent);
+
+        // Validate the configuration
         const valid = ajv.validate(schema, config);
         if (!valid) {
-            logger.error('Config file is invalid');
-            logger.error(ajv.errors);
+            console.error('Config file is invalid');
+            console.error(ajv.errors);
             const err = new Error('Config file is invalid');
             err.context = ajv.errors;
             throw err;
@@ -30,8 +45,7 @@ export function loadConfig() {
 
         return config;
     } catch (e) {
-        logger.error("Received unexpected error", e);
+        console.error("Unexpected error during configuration load", e);
         throw e;
     }
 }
-

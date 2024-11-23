@@ -1,8 +1,7 @@
 const debug = require("debug")("llm:processManager");
-const fs = require("fs-extra");
+const fs = require("fs");
 const path = require("path");
 const { spawn, execSync } = require("child_process");
-const ps = require("ps-node");
 const PortManager = require("./portManager");
 const killSync = require("kill-sync");
 const { generateExpectedProcesses, getPidsOfPort, checkPort } = require("./utils");
@@ -16,24 +15,19 @@ class ProcessManager {
 
     startProcess(processName, cmd, port) {
         debug({ startProcess: processName, cmd, port });
-        const logFile = this.logManager.createLogFile(processName);
-        const errorFile = this.logManager.createErrorFile(processName);
+        const logFilePath = this.logManager.createLogFile(processName);
+        const errorFilePath = this.logManager.createErrorFile(processName);
         console.log(`Starting process ${processName} with command: ${cmd.join(" ")}`);
 
+        const logFile = fs.openSync(logFilePath, "a");
+        const errorFile = fs.openSync(errorFilePath, "a");
+
         // Spawn the process with detached mode
-        const process = spawn(cmd[0], cmd.slice(1), { detached: true, stdio: ["ignore", "pipe", "pipe"] });
-
-        // Pipe stdout to a log file
-        if (logFile) {
-            const stdoutStream = fs.createWriteStream(logFile, { flags: "a" });
-            process.stdout.pipe(stdoutStream);
+        const commandOpts = {
+            detached: true,
+            stdio: ["ignore", logFile, errorFile],
         }
-
-        // Pipe stderr to a separate error file (or same log file)
-        if (errorFile) {
-            const stderrStream = fs.createWriteStream(errorFile, { flags: "a" });
-            process.stderr.pipe(stderrStream);
-        }
+        const process = spawn(cmd[0], cmd.slice(1), commandOpts);
 
         const pid = process.pid;
         // Unreference the child process
