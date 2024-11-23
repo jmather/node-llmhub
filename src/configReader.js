@@ -2,11 +2,7 @@ const debug = require("debug")("llm:configReader");
 const fs = require("fs-extra");
 const path = require("path");
 const YAML = require("yaml");
-
-function expandUserPath(filePath) {
-    if (!filePath) return filePath;
-    return filePath.replace(/^~(?=$|\/|\\)/, process.env.HOME || process.env.USERPROFILE);
-}
+const { expandUserPath } = require("./utils");
 
 class ConfigReader {
     static loadConfig(file_path) {

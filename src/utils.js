@@ -1,7 +1,9 @@
 const debug = require("debug")("llm:utils");
 const {execSync} = require("child_process");
 const path = require("path");
+const fs = require('fs');
 const PortManager = require("./PortManager");
+const container = require("./container");
 
 
 /**
@@ -155,6 +157,37 @@ function getPidsOfPort(port) {
     }
 }
 
+function expandUserPath(filePath) {
+    if (!filePath) return filePath;
+    return filePath.replace(/^~(?=$|\/|\\)/, process.env.HOME || process.env.USERPROFILE);
+}
+
+function checkTheFundamentals() {
+    const configDir = expandUserPath('~/.llmhub');
+    if (! fs.existsSync(configDir)) {
+        console.log('Creating config directory at', configDir);
+        fs.mkdirSync(configDir);
+    }
+
+    const configPath = expandUserPath('~/.llmhub/config.yaml');
+    if (! fs.existsSync(configPath)) {
+        console.log('Creating default config file at', configPath);
+        const baseConfig = {
+            model_search_paths: [
+                "~/.cache/lm-studio/models",
+                "~/.cache/huggingface/hub",
+            ],
+        }
+    }
+
+    const modelsFile = expandUserPath('~/.llmhub/models.yaml');
+    if (! fs.existsSync(modelsFile)) {
+        console.log('Creating default models file at', modelsFile);
+        const catalog = container.modelCatalog();
+        catalog.findAndUpdateModels();
+    }
+}
+
 module.exports = {
     findQuantization,
     findVersion,
@@ -164,4 +197,6 @@ module.exports = {
     getPidsOfPort,
     generateExpectedProcesses,
     estimateTokens,
+    checkTheFundamentals,
+    expandUserPath,
 };

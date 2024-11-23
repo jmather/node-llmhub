@@ -4,6 +4,7 @@ const fs = require("fs-extra");
 const YAML = require("yaml");
 const debug = require("debug")("llm:modelCatalog");
 const ConfigReader = require("./configReader");
+const glob = require("glob");
 const generateExpectedProcesses = require("./utils").generateExpectedProcesses;
 
 /**
@@ -12,6 +13,9 @@ const generateExpectedProcesses = require("./utils").generateExpectedProcesses;
  * @property {string} object
  * @property {string} file_type
  */
+
+const MODEL_EXTENSIONS = ["*.bin", "*.safetensors", "*.gguf"]
+
 
 class ModelCatalog {
     constructor(configManager) {

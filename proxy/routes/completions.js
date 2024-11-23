@@ -5,27 +5,18 @@ const dns = require("dns");
 const http = require("http");
 const { Readable } = require("stream");
 const { estimateTokens } = require("../../src/utils");
-
-// Log file paths
-const accessLogPath = process.env.ACCESS_LOG || "./access.log";
-const errorLogPath = process.env.ERROR_LOG || "./error.log";
-
-// Create writable streams for logs
-const accessLogStream = fs.createWriteStream(accessLogPath, { flags: "a" });
-const errorLogStream = fs.createWriteStream(errorLogPath, { flags: "a" });
+const logger = require('../utils/logger');
 
 function logAccess(message) {
     const timestamp = new Date().toISOString();
     const logEntry = `[Access] [${timestamp}] ${message}\n`;
-    accessLogStream.write(logEntry);
-    console.log(logEntry.trim());
+    logger.info(logEntry.trim());
 }
 
 function logError(message) {
     const timestamp = new Date().toISOString();
     const logEntry = `[Error] [${timestamp}] ${message}\n`;
-    errorLogStream.write(logEntry);
-    console.error(logEntry.trim());
+    logger.error(logEntry.trim());
 }
 
 // Create the proxy server
@@ -124,18 +115,24 @@ function handleRequest(req, res) {
 
             logAccess(`handleRequest: Proxied request to target: ${target}`);
 
-            const bufferStream = new Readable();
-            bufferStream.push(body);
-            bufferStream.push(null);
+            if (req.query.fc !== 1) {
+                // rebuild the body we were sent...
+                const bufferStream = new Readable();
+                bufferStream.push(body);
+                bufferStream.push(null);
 
-            req.headers["content-length"] = Buffer.byteLength(body);
-            delete req.headers["content-encoding"];
+                req.headers["content-length"] = Buffer.byteLength(body);
+                delete req.headers["content-encoding"];
 
-            proxy.web(req, res, { target, buffer: bufferStream }, (err) => {
-                logError(`Proxy error for ${req.url}: ${err.message}`);
-                res.writeHead(502, { "Content-Type": "text/plain" });
-                res.end("Bad Gateway");
-            });
+                proxy.web(req, res, { target, buffer: bufferStream }, (err) => {
+                    logError(`Proxy error for ${req.url}: ${err.message}`);
+                    res.writeHead(502, { "Content-Type": "text/plain" });
+                    res.end("Bad Gateway");
+                });
+            } else {
+                // populate the call with FC preamble
+            }
+
         } catch (err) {
             logError(`Error handling request for ${req.url}: ${err.message}`);
             res.writeHead(500, { "Content-Type": "text/plain" });

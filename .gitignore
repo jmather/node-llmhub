@@ -1,4 +1,5 @@
 .DS_Store
+*/.DS_Store
 .idea
 node_modules
 config.yaml
@@ -9,3 +10,4 @@ error_log
 access.log
 error.log
 coverage/
+llama.log
