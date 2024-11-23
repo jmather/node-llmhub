@@ -137,7 +137,7 @@ class ModelCatalog {
     saveModelsToYaml(models) {
         const modelsFilePath = path.resolve("~/.llmhub/models.yaml");
         ConfigReader.saveConfig(modelsFilePath, models);
-        console.log(`[Save] Models saved to ${modelsFilePath}`);
+        // console.log(`Models saved to ${modelsFilePath}`);
     }
 }
 

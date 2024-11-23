@@ -42,13 +42,19 @@ class ProcessManager {
         debug({ stopProcess: processName });
         const state = this.stateManager.loadState(processName);
         if (state) {
+            debug({ stopProcess: { processName, state } })
             const pid = state.pid;
             const port = state.port;
             const portPids = getPidsOfPort(port);
             const isCurrentlyRunning = portPids.indexOf(pid) !== -1
-            if (! isCurrentlyRunning) {
+            const notOurProcess = ! isCurrentlyRunning && portPids.length > 0
+
+            debug({ stopProcess: { pid, port, portPids, isCurrentlyRunning } })
+
+
+            if (portPids.length === 0 || notOurProcess) {
                 console.log(`Port ${port} is currently occupied by another service.`);
-                // this.stateManager.deleteState(processName);
+                this.stateManager.deleteState(processName);
                 return null;
             } else if (portPids.length === 0) {
                 console.log(`No service running on port ${port}, updating states...`);
@@ -60,7 +66,7 @@ class ProcessManager {
                 killSync(pid, 'SIGINT', true);
                 killSync(pid, 'SIGTERM', true);
                 console.log(`Process ${processName} stopped.`);
-                // this.stateManager.deleteState(processName);
+                this.stateManager.deleteState(processName);
                 return null;
             } catch (err) {
                 console.error(`Failed to stop process ${processName}:`, err.message);

@@ -6,7 +6,8 @@
     "llmhub": "cli.js"
   },
   "scripts": {
-    "test": "bin/test-manual-call.sh 8080"
+    "test-integration": "bin/test-manual-call.sh 8080",
+    "test": "jest"
   },
   "dependencies": {
     "avj": "^0.0.0",
