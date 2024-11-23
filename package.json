@@ -1,15 +1,13 @@
 {
-  "name": "llmhub-js",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "name": "node-llmhub",
+  "version": "0.5.0",
+  "description": "A tool for managing and running multiple LLM instances",
   "bin": {
     "llmhub": "cli.js"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "bin/test-manual-call.sh 8080"
   },
-  "private": true,
   "dependencies": {
     "avj": "^0.0.0",
     "body-parser": "^1.20.3",
