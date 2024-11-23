@@ -5,7 +5,7 @@ const YAML = require("yaml");
 const debug = require("debug")("llm:modelCatalog");
 const ConfigReader = require("./configReader");
 const glob = require("glob");
-const generateExpectedProcesses = require("./utils").generateExpectedProcesses;
+const { generateExpectedProcesses, expandUserPath } = require("./utils");
 
 /**
  * @typedef {Object} SystemModelData
@@ -139,7 +139,7 @@ class ModelCatalog {
     }
 
     saveModelsToYaml(models) {
-        const modelsFilePath = path.resolve("~/.llmhub/models.yaml");
+        const modelsFilePath = expandUserPath("~/.llmhub/models.yaml");
         ConfigReader.saveConfig(modelsFilePath, models);
         // console.log(`Models saved to ${modelsFilePath}`);
     }

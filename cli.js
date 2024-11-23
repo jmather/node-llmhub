@@ -2,13 +2,13 @@
 const debug = require("debug")("llm:cli");
 const yargs = require("yargs");
 const { hideBin } = require("yargs/helpers");
-const container = require("./src/container");
 const { checkTheFundamentals } = require("./src/utils");
 
 
 
 async function showModels() {
     checkTheFundamentals()
+    const container = require("./src/container");
     const config = container.configManager();
     console.log(config);
     const models = await ModelCatalog.listModels();
@@ -21,18 +21,21 @@ async function showModels() {
 
 function findModels() {
     checkTheFundamentals();
+    const container = require("./src/container");
     const catalog = container.modelCatalog();
     const models = catalog.findAndUpdateModels();
 }
 
 function startServers() {
     checkTheFundamentals();
+    const container = require("./src/container");
     const serviceManager = container.serviceManager();
     serviceManager.startAllServices();
     process.exit(0)
 }
 function stopServers() {
     checkTheFundamentals();
+    const container = require("./src/container");
     const serviceManager = container.serviceManager();
     serviceManager.stopAllServices();
     process.exit(0)
@@ -40,6 +43,7 @@ function stopServers() {
 
 function serverStatus() {
     checkTheFundamentals();
+    const container = require("./src/container");
     const serviceManager = container.serviceManager();
     // console.log(serviceManager);
     serviceManager.displayServiceStatus();
