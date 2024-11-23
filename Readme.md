@@ -31,9 +31,6 @@ The heart of the project is taking advantage of the shared memory model of OSX, 
     - `modelCatalog.js`: Manages available models.
     - `configManager.js`: Loads and validates configurations.
 
-- **`./common/`**:
-    - Core classes (`EngineManager.js`, `Model.js`, `HubConfig.js`) for engine and model management.
-
 - **`config.yaml`**:
     - Primary configuration file for proxy and engine settings.
 
@@ -151,7 +148,3 @@ Logs are saved to the following default locations:
 Contributions are welcome! Please submit issues or pull requests on the GitHub repository.
 
 ---
-
-## License
-
-This project is licensed under the MIT License. See `LICENSE` for details.
