@@ -90,7 +90,7 @@ class ModelCatalog {
 
     findAndUpdateModels() {
         const modelSearchPaths = this.configManager.getMergedConfig().model_search_paths || [];
-        const expandedPaths = modelSearchPaths.map(p => path.resolve(p));
+        const expandedPaths = modelSearchPaths.map(p => utils.expandUserPath(p));
 
         console.log("[Search] Searching in:", expandedPaths);
         const models = {};
