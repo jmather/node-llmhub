@@ -136,8 +136,9 @@ describe("ModelCatalog Tests", () => {
             jest.spyOn(ConfigReader, "saveConfig");
 
             modelCatalog.saveModelsToYaml(mockModels);
+            const utils = require('../src/utils');;
 
-            const expectedPath = path.resolve("~/.llmhub/models.yaml");
+            const expectedPath = utils.expandUserPath("~/.llmhub/models.yaml");
             expect(ConfigReader.saveConfig).toHaveBeenCalledWith(expectedPath, mockModels);
         });
     });

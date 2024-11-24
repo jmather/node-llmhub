@@ -50,6 +50,12 @@ function serverStatus() {
     process.exit(0)
 }
 
+yargs.fail((msg, err) => {
+    console.error('Error:', msg);
+    if (err) console.error(err);
+    process.exit(1);
+});
+
 yargs(hideBin(process.argv))
     .command("start", "Start the servers", {}, () => startServers())
     .command("stop", "Stop all running servers", {}, async () => stopServers())
@@ -60,3 +66,4 @@ yargs(hideBin(process.argv))
     .demandCommand(1, "You need at least one command before moving on")
     .help()
     .argv;
+

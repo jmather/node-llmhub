@@ -1,9 +1,8 @@
 const debug = require("debug")("llm:utils");
-const {execSync} = require("child_process");
+const { execSync} = require("child_process");
 const path = require("path");
 const fs = require('fs');
 const PortManager = require("./PortManager");
-const container = require("./container");
 
 
 /**
@@ -183,6 +182,7 @@ function checkTheFundamentals() {
     const modelsFile = expandUserPath('~/.llmhub/models.yaml');
     if (! fs.existsSync(modelsFile)) {
         console.log('Creating default models file at', modelsFile);
+        const container = require('./container');
         const catalog = container.modelCatalog();
         catalog.findAndUpdateModels();
     }
