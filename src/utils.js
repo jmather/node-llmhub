@@ -98,8 +98,18 @@ function generateExpectedProcesses(config = null) {
 }
 
 function findQuantization(filePath) {
-    // Placeholder logic to extract quantization from the file path.
-    if (filePath.includes("int8")) return "int8";
+    const fileName = path.basename(filePath).toLowerCase();
+
+    // Match known quantization patterns
+    if (fileName.includes("q8_0")) return "Q8_0";
+    if (fileName.includes("q4_0")) return "Q4_0";
+    if (fileName.includes("q4_k")) return "Q4_K";
+    if (fileName.includes("q5_k")) return "Q5_K";
+    if (fileName.includes("f16")) return "f16";
+    if (fileName.includes("4bit")) return "4bit";
+    if (fileName.includes("8bit")) return "8bit";
+
+    // Default fallback for unrecognized patterns
     return "no_quant";
 }
 
@@ -110,18 +120,24 @@ function findVersion(modelName) {
 }
 
 function getModelDataFromFileName(filePath) {
-    // Placeholder logic to extract data from a file name.
-    const fileName = path.basename(filePath);
+    const fileName = path.basename(filePath); // Extract the file name
+    const dirParts = filePath.split(path.sep); // Split the path into parts
+    const creator = dirParts[dirParts.length - 3]; // Creator is the second last directory
+    const modelDir = dirParts[dirParts.length - 2]; // Model directory (includes GGUF)
+    const quantization = findQuantization(fileName)
+
+    // Sanitize model name by removing GGUF suffix and common quantization patterns
+    const modelName = modelDir.replace(/-GGUF$/i, "");
+
     return {
-        source: "local",
-        creator: "unknown",
-        model_name: fileName.split(".")[0],
-        version: "unknown",
-        quantization: "no_quant",
-        path: filePath,
+        source: "local", // Default source
+        creator, // Extracted creator from directory structure
+        model_name: modelName, // Cleaned model name
+        version: "unknown", // Optional: add logic for version extraction if needed
+        quantization, // Parsed quantization
+        path: filePath, // Original file path
     };
 }
-
 function massageModelName(modelName, version, quantization) {
     // Adjust the model name based on version and quantization.
     return `${modelName}-${version}-${quantization}`;

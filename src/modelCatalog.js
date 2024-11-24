@@ -14,7 +14,9 @@ const utils = require('./utils');
  * @property {string} file_type
  */
 
-const MODEL_EXTENSIONS = ["*.bin", "*.safetensors", "*.gguf"]
+// for the future
+// const MODEL_EXTENSIONS = ["*.bin", "*.safetensors", "*.gguf"]
+const MODEL_EXTENSIONS = ["*.gguf"]
 
 
 function combineModelData(currentModelData, modelData) {
