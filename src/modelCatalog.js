@@ -17,6 +17,33 @@ const utils = require('./utils');
 const MODEL_EXTENSIONS = ["*.bin", "*.safetensors", "*.gguf"]
 
 
+function combineModelData(currentModelData, modelData) {
+    // Determine file type from the file path
+    const filePath = modelData.path;
+    const fileType = filePath.split('.').pop();
+
+    switch (fileType) {
+        case "safetensors":
+            currentModelData["safetensors"] = filePath;
+            break;
+        case "coreml":
+            currentModelData["coreml"] = filePath;
+            break;
+        case "gguf":
+            // Ensure 'gguf' is an object and add quantization data
+            currentModelData["gguf"] = currentModelData["gguf"] || {};
+            currentModelData["gguf"][modelData.quantization] = filePath;
+            break;
+        case "onnx":
+            currentModelData["onnx"] = filePath;
+            break;
+        default:
+            console.warn(`Unknown file type: ${fileType}`);
+    }
+}
+
+
+
 class ModelCatalog {
     constructor(configManager) {
         // debug(configManager);

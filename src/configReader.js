@@ -1,9 +1,8 @@
 const debug = require("debug")("llm:configReader");
 const fs = require("fs-extra");
-const path = require("path");
 const YAML = require("yaml");
 const utils = require("./utils");
-console.log(utils); // Log the exported functions to confirm
+
 class ConfigReader {
     static loadConfig(file_path) {
         const safe_file_path = utils.expandUserPath(file_path);
