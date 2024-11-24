@@ -1,3 +1,4 @@
+const debug = require("debug")("proxy:models");
 const { generateExpectedProcesses } = require("../../src/utils");
 const container = require("../../src/container");
 
@@ -46,6 +47,8 @@ function handleModelsRequest(req, res) {
     const config = container.configManager().getConfig();
     const expectedProcesses = generateExpectedProcesses(config);
 
+    debug({ handleModelsRequest: { config, expectedProcesses } })
+
     // Remove proxy-specific keys
     Object.keys(expectedProcesses).forEach((key) => {
         if (key.startsWith("proxy-")) {
@@ -53,16 +56,23 @@ function handleModelsRequest(req, res) {
         }
     });
 
+    const foundModels = {};
+    for (const key in expectedProcesses) {
+        const modelName = key.replace(/-[0-9]+$/, "");
+        debug({ handleModelsRequest: { modelName } });
+        foundModels[modelName] = {
+            id: modelName,
+            object: "model",
+            created: Date.now(),
+            owned_by: "organization-owner",
+        };
+    }
+
     // Convert models to API-compatible output
-    const models = Object.keys(expectedProcesses).map((model) => ({
-        id: model,
-        object: "model",
-        created: Date.now(),
-        owned_by: "organization-owner",
-    }));
+    const models = Object.keys(foundModels).map((model) => foundModels[model]);
 
     res.writeHead(200, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ models }));
+    res.end(JSON.stringify({ "object": "list", data: models }));
 }
 
 module.exports = handleModelsRequest;

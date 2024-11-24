@@ -1,8 +1,7 @@
 const fs = require("fs");
 const http = require("http");
 const handleModelsRequest = require("./routes/models");
-const { handleCompletionRequest } = require("./routes/completions");
-const { handleChatRequest } = require("./routes/chat-completions");
+const { handleCompletionRequest } = require("./routes/newCompletions");
 
 
 function logAccess(message) {
@@ -22,16 +21,17 @@ function start(port) {
         const { method, url } = req;
         const logPrefix = `${method} ${url}`;
 
+        const isModelsRequest = url.startsWith("/v1/models");
+        const isCompletionsRequest = url.startsWith("/v1/completions");
+        const isChatRequest = url.startsWith("/v1/chat/completions");
+
         try {
-            if (url.startsWith("/v1/models")) {
+            if (isModelsRequest) {
                 logAccess(`${logPrefix} - Routed to /v1/models`);
                 handleModelsRequest(req, res);
-            } else if (url.startsWith("/v1/completions")) {
-                logAccess(`${logPrefix} - Routed to /v1/completions`);
+            } else if (isChatRequest || isCompletionsRequest) {
+                logAccess(`${logPrefix} - Routed to completions endpoint`);
                 handleCompletionRequest(req, res);
-            } else if (url.startsWith("/v1/chat/completions")) {
-                logAccess(`${logPrefix} - Routed to /v1/chat/completions`);
-                handleChatRequest(req, res);
             } else {
                 logAccess(`${logPrefix} - 404 Not Found`);
                 res.writeHead(404, { "Content-Type": "text/plain" });
@@ -44,7 +44,7 @@ function start(port) {
         }
     });
 
-    server.listen(port, () => {
+    server.listen(port, '0.0.0.0', () => {
         console.log(`Proxy server listening on port ${port}`);
     });
 
