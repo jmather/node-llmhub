@@ -5,18 +5,17 @@ const dns = require("dns");
 const http = require("http");
 const { Readable } = require("stream");
 const { estimateTokens } = require("../../src/utils");
-const logger = require('../utils/logger');
 
 function logAccess(message) {
     const timestamp = new Date().toISOString();
     const logEntry = `[Access] [${timestamp}] ${message}\n`;
-    logger.info(logEntry.trim());
+    console.log(logEntry.trim());
 }
 
 function logError(message) {
     const timestamp = new Date().toISOString();
     const logEntry = `[Error] [${timestamp}] ${message}\n`;
-    logger.error(logEntry.trim());
+    console.error(logEntry.trim());
 }
 
 // Create the proxy server

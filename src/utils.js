@@ -65,6 +65,16 @@ function generateExpectedProcesses(config = null) {
     for (const [modelName, startConfig] of Object.entries(config.on_start)) {
         const quantName = startConfig.quant;
         const contextSizes = startConfig.context_sizes || [config.default_context_size];
+        debug({ generateExpectedProcesses: { modelName, startConfig, quantName, contextSizes } });
+        debug({ modelConfig: config.models[modelName] });
+
+        if (! config.models[modelName].gguf[quantName]) {
+            const keys = Object.keys(config.models[modelName].gguf);
+
+            console.error(`Missing quantization path for model ${modelName} and quantization ${quantName}`);
+            console.error('Available quantizations:', keys.join(', '));
+            continue;
+        }
         const quantPath = config.models[modelName].gguf[quantName];
 
         for (const contextSize of contextSizes) {
@@ -127,7 +137,7 @@ function getModelDataFromFileName(filePath) {
     const quantization = findQuantization(fileName)
 
     // Sanitize model name by removing GGUF suffix and common quantization patterns
-    const modelName = modelDir.replace(/-GGUF$/i, "");
+    const modelName = modelDir
 
     return {
         source: "local", // Default source

@@ -1,6 +1,6 @@
 {
   "name": "node-llmhub",
-  "version": "0.5.7",
+  "version": "0.5.8",
   "description": "A tool for managing and running multiple LLM instances",
   "bin": {
     "llmhub": "cli.js"
