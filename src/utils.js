@@ -100,7 +100,8 @@ function generateExpectedProcesses(config = null) {
     if (config.enable_proxy) {
         const webPort = config.port || 5000;
         const proxyProcessName = `proxy-${webPort}`;
-        const proxyCmd = ["node", "proxy/proxyServer.js", webPort];
+        const proxyPath = __dirname + '/../proxy/proxyServer.js';
+        const proxyCmd = ["node", proxyPath, webPort];
         expectedProcesses[proxyProcessName] = { cmd: proxyCmd, port: webPort };
     }
 
