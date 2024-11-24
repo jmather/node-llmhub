@@ -9,6 +9,9 @@
     "test-integration": "bin/test-manual-call.sh 8080",
     "test": "jest"
   },
+  "engines": {
+    "node": ">=23.3.0"
+  },
   "dependencies": {
     "avj": "^0.0.0",
     "axios": "^1.7.7",
