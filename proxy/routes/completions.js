@@ -114,23 +114,19 @@ function handleRequest(req, res) {
 
             logAccess(`handleRequest: Proxied request to target: ${target}`);
 
-            if (req.query.fc !== 1) {
-                // rebuild the body we were sent...
-                const bufferStream = new Readable();
-                bufferStream.push(body);
-                bufferStream.push(null);
+            // rebuild the body we were sent...
+            const bufferStream = new Readable();
+            bufferStream.push(body);
+            bufferStream.push(null);
 
-                req.headers["content-length"] = Buffer.byteLength(body);
-                delete req.headers["content-encoding"];
+            req.headers["content-length"] = Buffer.byteLength(body);
+            delete req.headers["content-encoding"];
 
-                proxy.web(req, res, { target, buffer: bufferStream }, (err) => {
-                    logError(`Proxy error for ${req.url}: ${err.message}`);
-                    res.writeHead(502, { "Content-Type": "text/plain" });
-                    res.end("Bad Gateway");
-                });
-            } else {
-                // populate the call with FC preamble
-            }
+            proxy.web(req, res, { target, buffer: bufferStream }, (err) => {
+                logError(`Proxy error for ${req.url}: ${err.message}`);
+                res.writeHead(502, { "Content-Type": "text/plain" });
+                res.end("Bad Gateway");
+            });
 
         } catch (err) {
             logError(`Error handling request for ${req.url}: ${err.message}`);
