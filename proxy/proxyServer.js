@@ -1,7 +1,8 @@
 const fs = require("fs");
 const http = require("http");
 const handleModelsRequest = require("./routes/models");
-const { handleRequest: handleCompletionsRequest } = require("./routes/completions");
+const { handleCompletionRequest } = require("./routes/completions");
+const { handleChatRequest } = require("./routes/chat-completions");
 
 
 function logAccess(message) {
@@ -25,9 +26,12 @@ function start(port) {
             if (url.startsWith("/v1/models")) {
                 logAccess(`${logPrefix} - Routed to /v1/models`);
                 handleModelsRequest(req, res);
-            } else if (url.startsWith("/v1/completions") || url.startsWith("/v1/chat/completions")) {
+            } else if (url.startsWith("/v1/completions")) {
                 logAccess(`${logPrefix} - Routed to /v1/completions`);
-                handleCompletionsRequest(req, res);
+                handleCompletionRequest(req, res);
+            } else if (url.startsWith("/v1/chat/completions")) {
+                logAccess(`${logPrefix} - Routed to /v1/chat/completions`);
+                handleChatRequest(req, res);
             } else {
                 logAccess(`${logPrefix} - 404 Not Found`);
                 res.writeHead(404, { "Content-Type": "text/plain" });

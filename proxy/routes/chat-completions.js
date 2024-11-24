@@ -13,12 +13,14 @@ const {
     extractModelName,
 } = require("../utils");
 
+
+
 /**
  * Handles proxying requests to the appropriate backend service for /v1/completions and /v1/chat/completions.
  * @param {IncomingMessage} req - The HTTP request object.
  * @param {ServerResponse} res - The HTTP response object.
  */
-function handleCompletionRequest(req, res) {
+function handleChatRequest(req, res) {
     let body = [];
     req.on("data", (chunk) => body.push(chunk));
 
@@ -37,9 +39,9 @@ function handleCompletionRequest(req, res) {
                 return;
             }
 
-            const { prompt, ...rest } = parsedBody;
-            logAccess(`handleRequest: Received body: ${bodyString}`);
-            debug({ handleCompletionRequest: { bodyString, prompt, rest } });
+            const { messages, ...rest } = parsedBody;
+            logAccess(`handleChatRequest: Received body: ${bodyString}`);
+            debug({ handleChatRequest: { bodyString, messages, rest } });
 
             const modelName = extractModelName(rest);
             const target = determineTarget(modelName, rest);
@@ -64,17 +66,16 @@ function handleCompletionRequest(req, res) {
                 .replaceAll('//', '/')
                 .replace(':/', '://');
 
-            debug({ handleCompletionRequest: { modelName, target, fullTargetPath } });
-            logAccess(`handleRequest: Proxied request to target: ${target}`);
+            debug({ handleChatRequest: { modelName, target, fullTargetPath } });
+            logAccess(`handleChatRequest: Proxied request to target: ${target}`);
+
+            const data = {
+                messages,
+                ...rest,
+            }
 
             // Make the request
-            const data = {
-                prompt,
-                ...rest
-            }
             const resp = await webRequest(fullTargetPath, data);
-
-            debug({ handleCompletionRequest: { status: resp.status, statusText: resp.statusText, data: resp.data} });
 
             if (!resp || !resp.data) {
                 logError(`Invalid response from target: ${target}`);
@@ -99,9 +100,10 @@ function handleCompletionRequest(req, res) {
 
     req.on("error", (err) => {
         logError(`Request error for ${req.url}: ${err.message}`);
+        debug({ handleRequest: { error: err.message, stack: err.stack } });
         res.writeHead(400, { "Content-Type": "text/plain" });
         res.end("Bad Request");
     });
 }
 
-module.exports = { handleCompletionRequest };
+module.exports = { handleChatRequest };

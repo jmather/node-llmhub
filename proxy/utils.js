@@ -1,17 +1,17 @@
 const debug = require('debug')('proxy:utils');
 const axios = require('axios');
 
-async function webRequest(target, prompt, rest) {
-    debug({ target, prompt }, 'Making request to OpenAI API');
+async function webRequest(target, data) {
+    debug({ target, data }, 'Making request to OpenAI API');
 
-    return await axios.post(target, {
-        prompt,
-        ...rest
-    }, {
+    const resp = await axios.post(target, data, {
         headers: {
             'Content-Type': 'application/json',
         }
     });
+
+    debug({ resp }, 'Received response from OpenAI API');
+    return resp;
 }
 
 /**
@@ -58,8 +58,83 @@ function estimateTokens(payload) {
     return tokenCount;
 }
 
+function logAccess(message) {
+    const timestamp = new Date().toISOString();
+    const logEntry = `[Access] [${timestamp}] ${message}\n`;
+    console.log(logEntry.trim());
+}
+
+function logError(message) {
+    const timestamp = new Date().toISOString();
+    const logEntry = `[Error] [${timestamp}] ${message}\n`;
+    console.error(logEntry.trim());
+}
+
+/**
+ * Determines the target backend URL based on the model name and context size.
+ * @param {string} modelName - The model name extracted from the request payload.
+ * @param {Object} payload - The request payload.
+ * @returns {string} - The backend service URL.
+ */
+function determineTarget(modelName, payload) {
+    const container = require(__dirname + "/../src/container");
+    const utils = require(__dirname + "/../src/utils");
+    const generateExpectedProcesses = utils.generateExpectedProcesses;
+    const config = container.configManager().getConfig();
+    const stateManager = container.stateManager();
+    const expectedProcesses = generateExpectedProcesses(config);
+
+    const matches = Object.keys(expectedProcesses).filter((key) =>
+        key.includes(modelName)
+    );
+
+    if (matches.length === 0) {
+        return null;
+    }
+
+    logAccess(`determineTarget: Found matches for model '${modelName}': ${JSON.stringify(matches)}`);
+
+    const contextMatches = matches.map((key) => {
+        const contextSize = parseInt(key.split("-").pop(), 10);
+        return { key, contextSize };
+    });
+
+    contextMatches.sort((a, b) => a.contextSize - b.contextSize);
+
+    const estimatedTokens = estimateTokens(payload);
+    let selectedMatch = contextMatches.find((match) => match.contextSize >= estimatedTokens);
+
+    if (!selectedMatch) {
+        selectedMatch = contextMatches[contextMatches.length - 1];
+    }
+
+    const state = stateManager.loadState(selectedMatch.key);
+    if (!state) {
+        throw new Error(`State not found for process: ${selectedMatch.key}`);
+    }
+
+    logAccess(`determineTarget: Selected target '${selectedMatch.key}' with port ${state.port}`);
+    return `http://localhost:${state.port}`;
+}
+
+/**
+ * Extracts the model name from the request payload.
+ * @param {Object} payload - The parsed request payload.
+ * @returns {string} - The model name specified in the payload.
+ */
+function extractModelName(payload) {
+    if (!payload || !payload.model) {
+        return null;
+    }
+    return payload.model;
+}
+
 
 module.exports = {
     estimateTokens,
     webRequest,
+    logAccess,
+    logError,
+    determineTarget,
+    extractModelName,
 };
