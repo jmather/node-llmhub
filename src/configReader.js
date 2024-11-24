@@ -2,11 +2,11 @@ const debug = require("debug")("llm:configReader");
 const fs = require("fs-extra");
 const path = require("path");
 const YAML = require("yaml");
-const { expandUserPath } = require("./utils");
+const utils = require("./utils");
 
 class ConfigReader {
     static loadConfig(file_path) {
-        const safe_file_path = expandUserPath(file_path);
+        const safe_file_path = utils.expandUserPath(file_path);
         // debug({ file_path, safe_file_path });
 
         if (file_path && fs.existsSync(safe_file_path)) {
@@ -21,7 +21,7 @@ class ConfigReader {
     }
 
     static saveConfig(file_path, config) {
-        const safe_file_path = expandUserPath(file_path);
+        const safe_file_path = utils.expandUserPath(file_path);
         try {
             const yamlContent = YAML.stringify(config);
             fs.writeFileSync(safe_file_path, yamlContent, "utf8");

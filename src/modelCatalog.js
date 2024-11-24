@@ -5,7 +5,7 @@ const YAML = require("yaml");
 const debug = require("debug")("llm:modelCatalog");
 const ConfigReader = require("./configReader");
 const glob = require("glob");
-const { generateExpectedProcesses, expandUserPath } = require("./utils");
+const utils = require('./utils');
 
 /**
  * @typedef {Object} SystemModelData
@@ -25,7 +25,7 @@ class ModelCatalog {
 
     getRunningModels() {
         const config = this.configManager.getConfig();
-        const expected = generateExpectedProcesses(config);
+        const expected = utils.generateExpectedProcesses(config);
         for (const key in expected) {
             console.log(key);
             if (key.startsWith("proxy-")) {
@@ -139,7 +139,7 @@ class ModelCatalog {
     }
 
     saveModelsToYaml(models) {
-        const modelsFilePath = expandUserPath("~/.llmhub/models.yaml");
+        const modelsFilePath = utils.expandUserPath("~/.llmhub/models.yaml");
         ConfigReader.saveConfig(modelsFilePath, models);
         // console.log(`Models saved to ${modelsFilePath}`);
     }
