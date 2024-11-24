@@ -50,6 +50,12 @@ function serverStatus() {
     process.exit(0)
 }
 
+function showVersion() {
+    const packageJson = require("./package.json");
+    console.log(packageJson.version);
+    process.exit(0);
+}
+
 yargs.fail((msg, err) => {
     console.error('Error:', msg);
     if (err) console.error(err);
@@ -62,6 +68,7 @@ yargs(hideBin(process.argv))
     .command("status", "Get the status of all servers", {}, () => serverStatus())
     .command("models", "Get the list of models", {}, showModels)
     .command("update-models", "Update the cached list of models on your system", {}, findModels)
+    .command("version", "Display the version", {}, () => showVersion())
     .command("help", "Show help", {}, () => yargs.showHelp())
     .demandCommand(1, "You need at least one command before moving on")
     .help()
