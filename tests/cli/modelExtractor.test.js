@@ -4,16 +4,16 @@ const {
     extractModel,
     GenericModelExtractor,
     HuggingfaceModelExtractor,
-} = require("../src/modelExtractor");
+} = require("../../src/modelExtractor");
 const {
     findQuantization,
     findVersion,
     getModelDataFromFileName,
     massageModelName,
-} = require("../src/utils");
+} = require("../../src/utils");
 
 jest.mock("fs-extra");
-jest.mock("../src/utils");
+jest.mock("../../src/utils");
 
 describe("ModelExtractor", () => {
     const mockFilePath = "/path/to/model-file.gguf";

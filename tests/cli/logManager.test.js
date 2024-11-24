@@ -1,4 +1,4 @@
-const LogManager = require("../src/logManager");
+const LogManager = require("../../src/logManager");
 const fs = require("fs-extra");
 const path = require("path");
 const { DateTime } = require("luxon");

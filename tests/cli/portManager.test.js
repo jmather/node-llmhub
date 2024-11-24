@@ -1,4 +1,4 @@
-const PortManager = require("../src/portManager");
+const PortManager = require("../../src/portManager");
 
 describe("PortManager", () => {
     const enginePortMin = 8081;

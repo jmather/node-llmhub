@@ -1,5 +1,5 @@
-const ServiceManager = require("../src/serviceManager");
-const { STATUSES } = require("../src/serviceManager");
+const ServiceManager = require("../../src/serviceManager");
+const { STATUSES } = require("../../src/serviceManager");
 const mockProcessManager = {
     startProcess: jest.fn(),
     stopProcess: jest.fn(),
@@ -15,13 +15,13 @@ const mockStateManager = {
     loadState: jest.fn(),
 };
 const mockModelCatalog = {};
-const mockUtils = require("../src/utils");
+const mockUtils = require("../../src/utils");
 
 jest.mock("fs-extra", () => ({
     statSync: jest.fn(),
 }));
 
-jest.mock("../src/utils");
+jest.mock("../../src/utils");
 
 describe("ServiceManager", () => {
     let serviceManager;

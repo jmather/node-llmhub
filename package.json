@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "avj": "^0.0.0",
+    "axios": "^1.7.7",
     "body-parser": "^1.20.3",
     "chalk": "^5.3.0",
     "child_process": "^1.0.2",

@@ -1,15 +1,15 @@
-const ProcessManager = require("../src/processManager");
+const ProcessManager = require("../../src/processManager");
 const fs = require("fs");
 const { spawn } = require("child_process");
 const killSync = require("kill-sync");
-const { getPidsOfPort } = require("../src/utils");
+const { getPidsOfPort } = require("../../src/utils");
 
 jest.mock("fs");
 jest.mock("child_process", () => ({
     spawn: jest.fn(),
 }));
 jest.mock("kill-sync");
-jest.mock("../src/utils");
+jest.mock("../../src/utils");
 
 describe("ProcessManager Tests", () => {
     let processManager;

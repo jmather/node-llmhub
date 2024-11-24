@@ -1,10 +1,11 @@
-const fs = require("fs");
 const debug = require("debug")("proxy:completions");
+const fs = require("fs");
 const httpProxy = require("http-proxy");
 const dns = require("dns");
 const http = require("http");
 const { Readable } = require("stream");
-const { estimateTokens } = require("../../src/utils");
+const { estimateTokens, webRequest } = require("../utils");
+
 
 function logAccess(message) {
     const timestamp = new Date().toISOString();
@@ -18,36 +19,6 @@ function logError(message) {
     console.error(logEntry.trim());
 }
 
-// Create the proxy server
-const proxy = httpProxy.createProxyServer({
-    agent: new http.Agent({
-        lookup: (hostname, options, callback) => {
-            dns.lookup(hostname, { family: 4 }, callback); // Force IPv4
-        },
-    }),
-    proxy: {
-        timeout: 30000,
-    },
-});
-
-// Add listeners for response and request details
-proxy.on("proxyRes", (proxyRes, req, res) => {
-    logAccess(`[Proxy Response] Status Code: ${proxyRes.statusCode}, Target: ${req.target}`);
-});
-
-proxy.on("proxyReq", (proxyReq, req, res, options) => {
-    logAccess(`[Proxy Request] Target: ${options.target}, Headers: ${JSON.stringify(req.headers)}`);
-});
-
-proxy.on("error", (err, req, res) => {
-    logError(`[Proxy Error] ${err.message}`);
-    res.writeHead(502, { "Content-Type": "text/plain" });
-    res.end("Bad Gateway");
-});
-
-const container = require("../../src/container");
-const generateExpectedProcesses = require("../../src/utils").generateExpectedProcesses;
-
 /**
  * Determines the target backend URL based on the model name and context size.
  * @param {string} modelName - The model name extracted from the request payload.
@@ -55,6 +26,8 @@ const generateExpectedProcesses = require("../../src/utils").generateExpectedPro
  * @returns {string} - The backend service URL.
  */
 function determineTarget(modelName, payload) {
+    const container = require("../../src/container");
+    const generateExpectedProcesses = require("../../src/utils").generateExpectedProcesses;
     const config = container.configManager().getConfig();
     const stateManager = container.stateManager();
     const expectedProcesses = generateExpectedProcesses(config);
@@ -64,7 +37,7 @@ function determineTarget(modelName, payload) {
     );
 
     if (matches.length === 0) {
-        throw new Error(`No matching process found for model: ${modelName}`);
+        return null;
     }
 
     logAccess(`determineTarget: Found matches for model '${modelName}': ${JSON.stringify(matches)}`);
@@ -101,32 +74,68 @@ function handleRequest(req, res) {
     let body = [];
     req.on("data", (chunk) => body.push(chunk));
 
-    req.on("end", () => {
+    req.on("end", async () => {
         try {
             body = Buffer.concat(body);
             const bodyString = body.toString();
-            req.body = JSON.parse(bodyString);
 
+            let parsedBody;
+            try {
+                parsedBody = JSON.parse(bodyString);
+            } catch (err) {
+                logError(`Invalid JSON body: ${err.message}`);
+                res.writeHead(400, { "Content-Type": "text/plain" });
+                res.end("Bad Request: Invalid JSON");
+                return;
+            }
+
+            const { prompt, ...rest } = parsedBody;
             logAccess(`handleRequest: Received body: ${bodyString}`);
+            debug({ handleRequest: { bodyString, prompt, rest } });
 
-            const modelName = extractModelName(req.body);
-            const target = determineTarget(modelName, req.body);
+            const modelName = extractModelName(rest);
+            const target = determineTarget(modelName, rest);
 
+            if (!modelName) {
+                logError(`Invalid or missing model name in request: ${bodyString}`);
+                res.writeHead(400, { "Content-Type": "text/plain" });
+                res.end("Bad Request: Missing 'model' property in request body.");
+                return;
+            }
+
+            if (!target) {
+                logError(`Target not found for model '${modelName}' with input: ${JSON.stringify(rest)}`);
+                res.writeHead(404, { "Content-Type": "text/plain" });
+                res.end(`Not Found: Unable to determine target for model '${modelName}'.`);
+                return;
+            }
+
+            const targetUri = new URL(target); // Convert target to a URL object
+            targetUri.pathname = `${targetUri.pathname}${req.url}`; // Append the incoming request's path
+            const fullTargetPath = targetUri.toString()
+                .replaceAll('//', '/')
+                .replace(':/', '://');
+
+            debug({ updatedTarget: fullTargetPath }, "Updated target with request URL");
+            debug({ handleRequest: { modelName, target } });
             logAccess(`handleRequest: Proxied request to target: ${target}`);
 
-            // rebuild the body we were sent...
-            const bufferStream = new Readable();
-            bufferStream.push(body);
-            bufferStream.push(null);
+            // Make the request
+            const resp = await webRequest(fullTargetPath, prompt, rest);
 
-            req.headers["content-length"] = Buffer.byteLength(body);
-            delete req.headers["content-encoding"];
-
-            proxy.web(req, res, { target, buffer: bufferStream }, (err) => {
-                logError(`Proxy error for ${req.url}: ${err.message}`);
+            if (!resp || !resp.data || !resp.data.content) {
+                logError(`Invalid response from target: ${target}`);
                 res.writeHead(502, { "Content-Type": "text/plain" });
-                res.end("Bad Gateway");
-            });
+                res.end("Bad Gateway: Invalid response from target service");
+                return;
+            }
+
+            let responseContent = resp.data.content;
+            let responseStatus = resp.status;
+            let contentType = resp.headers['content-type'] || 'application/json';
+
+            res.writeHead(responseStatus, { "Content-Type": contentType });
+            res.end(responseContent);
 
         } catch (err) {
             logError(`Error handling request for ${req.url}: ${err.message}`);
@@ -141,7 +150,6 @@ function handleRequest(req, res) {
         res.end("Bad Request");
     });
 }
-
 /**
  * Extracts the model name from the request payload.
  * @param {Object} payload - The parsed request payload.
@@ -149,7 +157,7 @@ function handleRequest(req, res) {
  */
 function extractModelName(payload) {
     if (!payload || !payload.model) {
-        throw new Error("Model name is missing in the request payload");
+        return null;
     }
     return payload.model;
 }

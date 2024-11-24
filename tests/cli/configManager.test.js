@@ -1,8 +1,8 @@
 const fs = require("fs-extra");
-const ConfigReader = require("../src/configReader");
-const ConfigManager = require("../src/configManager");
+const ConfigReader = require("../../src/configReader");
+const ConfigManager = require("../../src/configManager");
 
-jest.mock("../src/configReader");
+jest.mock("../../src/configReader");
 
 describe("ConfigManager Tests", () => {
     const mockGlobalConfig = {

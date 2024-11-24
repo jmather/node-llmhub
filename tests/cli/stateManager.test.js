@@ -1,6 +1,6 @@
 const fs = require("fs-extra");
 const path = require("path");
-const StateManager = require("../src/stateManager");
+const StateManager = require("../../src/stateManager");
 
 jest.mock("fs-extra");
 

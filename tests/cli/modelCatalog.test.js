@@ -1,12 +1,12 @@
-const ModelCatalog = require("../src/modelCatalog");
-const ConfigManager = require("../src/configManager");
-const ConfigReader = require("../src/configReader");
-const { generateExpectedProcesses } = require("../src/utils");
+const ModelCatalog = require("../../src/modelCatalog");
+const ConfigManager = require("../../src/configManager");
+const ConfigReader = require("../../src/configReader");
+const { generateExpectedProcesses } = require("../../src/utils");
 const fs = require("fs-extra");
 const path = require("path");
 
-jest.mock("../src/configReader");
-jest.mock("../src/utils");
+jest.mock("../../src/configReader");
+jest.mock("../../src/utils");
 
 describe("ModelCatalog Tests", () => {
     const mockConfigManager = {
@@ -136,7 +136,7 @@ describe("ModelCatalog Tests", () => {
             jest.spyOn(ConfigReader, "saveConfig");
 
             modelCatalog.saveModelsToYaml(mockModels);
-            const utils = require('../src/utils');;
+            const utils = require('../../src/utils');;
 
             const expectedPath = utils.expandUserPath("~/.llmhub/models.yaml");
             expect(ConfigReader.saveConfig).toHaveBeenCalledWith(expectedPath, mockModels);

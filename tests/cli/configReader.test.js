@@ -1,6 +1,6 @@
 const fs = require("fs-extra");
 const YAML = require("yaml");
-const ConfigReader = require("../src/configReader");
+const ConfigReader = require("../../src/configReader");
 
 jest.mock("fs-extra");
 

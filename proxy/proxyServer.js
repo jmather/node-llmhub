@@ -3,25 +3,16 @@ const http = require("http");
 const handleModelsRequest = require("./routes/models");
 const { handleRequest: handleCompletionsRequest } = require("./routes/completions");
 
-// Log file paths (use environment variables or defaults)
-const accessLogPath = process.env.ACCESS_LOG || "./access.log";
-const errorLogPath = process.env.ERROR_LOG || "./error.log";
-
-// Create writable streams for logs
-const accessLogStream = fs.createWriteStream(accessLogPath, { flags: "a" });
-const errorLogStream = fs.createWriteStream(errorLogPath, { flags: "a" });
 
 function logAccess(message) {
     const timestamp = new Date().toISOString();
     const logEntry = `[Access] [${timestamp}] ${message}\n`;
-    accessLogStream.write(logEntry);
     console.log(logEntry.trim()); // Optional: Log to console for visibility
 }
 
 function logError(message) {
     const timestamp = new Date().toISOString();
     const logEntry = `[Error] [${timestamp}] ${message}\n`;
-    errorLogStream.write(logEntry);
     console.error(logEntry.trim()); // Optional: Log to console for visibility
 }
 
@@ -57,6 +48,21 @@ function start(port) {
 }
 
 module.exports = { start };
+
+// process.on("uncaughtException", (err) => {
+//     console.error(`[Fatal Error] Uncaught Exception: ${err.message}`);
+//     console.error(err.stack);
+//     // Optionally: Decide if the server should restart or continue
+//     // process.exit(1); // Exit for fatal errors
+// });
+//
+// process.on("unhandledRejection", (reason, promise) => {
+//     console.error(`[Fatal Error] Unhandled Rejection at: ${promise}`);
+//     console.error(`Reason: ${reason}`);
+//     // Optionally: Decide if the server should restart or continue
+//     // process.exit(1);
+// });
+
 
 console.log(process.argv)
 
