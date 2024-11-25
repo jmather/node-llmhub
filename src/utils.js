@@ -65,19 +65,19 @@ function generateExpectedProcesses(config = null) {
 }
 
 function findQuantization(filePath) {
-    const fileName = path.basename(filePath).toLowerCase();
+    const fileName = path.basename(filePath);
 
-    // Match known quantization patterns
-    if (fileName.includes("q8_0")) return "Q8_0";
-    if (fileName.includes("q4_0")) return "Q4_0";
-    if (fileName.includes("q4_k")) return "Q4_K";
-    if (fileName.includes("q5_k")) return "Q5_K";
-    if (fileName.includes("f16")) return "f16";
-    if (fileName.includes("4bit")) return "4bit";
-    if (fileName.includes("8bit")) return "8bit";
+    // Replace '-' and '.' with spaces for easier pattern matching
+    const normalizedFileName = fileName.replace(/[-.]/g, ' ');
 
-    // Default fallback for unrecognized patterns
-    return "no_quant";
+    // Regular expression to match quantization patterns (case-insensitive)
+    const quantizationPattern = /\b([qf][0-9][^ ]*)\b/i;
+
+    // Search for the quantization pattern in the normalized filename
+    const match = normalizedFileName.match(quantizationPattern);
+
+    // Return the matched quantization identifier or 'no_quant' if not found
+    return match ? match[1] : 'NO_QUANT';
 }
 
 function findVersion(modelName) {
