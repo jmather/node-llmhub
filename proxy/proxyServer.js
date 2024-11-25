@@ -1,7 +1,7 @@
 const fs = require("fs");
 const http = require("http");
 const handleModelsRequest = require("./routes/models");
-const { handleCompletionRequest } = require("./routes/newCompletions");
+const { handleCompletionRequest } = require("./routes/completions");
 
 
 function logAccess(message) {

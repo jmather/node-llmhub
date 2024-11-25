@@ -37,9 +37,17 @@ function handleCompletionRequest(req, res) {
                 return;
             }
 
-            const { prompt, ...rest } = parsedBody;
+            const { prompt, messages, ...rest } = parsedBody;
             logAccess(`handleRequest: Received body: ${bodyString}`);
-            debug({ handleCompletionRequest: { bodyString, prompt, rest } });
+            debug({ handleCompletionRequest: { bodyString, prompt, messages, rest } });
+
+            // Validate required fields
+            if (!prompt && !messages) {
+                logError("Invalid request: Missing 'prompt' or 'messages' in request body.");
+                res.writeHead(400, { "Content-Type": "text/plain" });
+                res.end("Bad Request: Missing 'prompt' or 'messages' in request body.");
+                return;
+            }
 
             const modelName = extractModelName(rest);
             const target = determineTarget(modelName, rest);
@@ -60,21 +68,20 @@ function handleCompletionRequest(req, res) {
 
             const targetUri = new URL(target); // Convert target to a URL object
             targetUri.pathname = `${targetUri.pathname}${req.url}`; // Append the incoming request's path
-            const fullTargetPath = targetUri.toString()
-                .replaceAll('//', '/')
-                .replace(':/', '://');
+            const fullTargetPath = targetUri.toString().replaceAll('//', '/').replace(':/', '://');
 
             debug({ handleCompletionRequest: { modelName, target, fullTargetPath } });
             logAccess(`handleRequest: Proxied request to target: ${target}`);
 
-            // Make the request
+            // Construct data payload dynamically
             const data = {
-                prompt,
+                ...(prompt && { prompt }),
+                ...(messages && { messages }),
                 ...rest
-            }
-            const resp = await webRequest(fullTargetPath, data);
+            };
 
-            debug({ handleCompletionRequest: { status: resp.status, statusText: resp.statusText, data: resp.data} });
+            // Make the request
+            const resp = await webRequest(fullTargetPath, data);
 
             if (!resp || !resp.data) {
                 logError(`Invalid response from target: ${target}`);
