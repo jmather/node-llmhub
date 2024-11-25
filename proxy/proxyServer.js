@@ -3,6 +3,7 @@ const http = require("http");
 const crypto = require("crypto"); // For generating request IDs
 const handleModelsRequest = require("./routes/models");
 const { handleCompletionRequest } = require("./routes/completions");
+const { handleBlindProxyRequest } = require("./routes/blindProxy");
 const { generateUuid, logAccess, logError } = require("./utils");
 
 function start(port) {
@@ -26,9 +27,9 @@ function start(port) {
                 req.logAccess(`${logPrefix} - Routed to completions endpoint`);
                 handleCompletionRequest(req, res); // Pass requestId to the handler
             } else {
-                req.logAccess(`${logPrefix} - 404 Not Found`);
-                res.writeHead(404, { "Content-Type": "text/plain" });
-                res.end("Not Found");
+                // Fallback to Blind Proxy for unmatched routes
+                req.logAccess(`${logPrefix} - Routed to Blind Proxy`);
+                handleBlindProxyRequest(req, res);
             }
         } catch (err) {
             req.logError(`${logPrefix} - ${err.message}`);

@@ -86,7 +86,7 @@ function logError(requestId, message) {
  * @param {Object} payload - The request payload.
  * @returns {string} - The backend service URL.
  */
-function determineTarget(modelName, payload) {
+function determineTarget(reqId, modelName, payload) {
     const container = require(__dirname + "/../src/container");
     const utils = require(__dirname + "/../src/utils");
     const generateExpectedProcesses = utils.generateExpectedProcesses;
@@ -102,7 +102,7 @@ function determineTarget(modelName, payload) {
         return null;
     }
 
-    logAccess(`determineTarget: Found matches for model '${modelName}': ${JSON.stringify(matches)}`);
+    logAccess(reqId, `determineTarget: Found matches for model '${modelName}': ${JSON.stringify(matches)}`);
 
     const contextMatches = matches.map((key) => {
         const contextSize = parseInt(key.split("-").pop(), 10);
@@ -123,7 +123,7 @@ function determineTarget(modelName, payload) {
         throw new Error(`State not found for process: ${selectedMatch.key}`);
     }
 
-    logAccess(`determineTarget: Selected target '${selectedMatch.key}' with port ${state.port}`);
+    logAccess(reqId,`determineTarget: Selected target '${selectedMatch.key}' with port ${state.port}`);
     return `http://localhost:${state.port}`;
 }
 

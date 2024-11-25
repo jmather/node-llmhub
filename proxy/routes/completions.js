@@ -62,7 +62,7 @@ function handleCompletionRequest(req, res) {
             }
 
             const modelName = extractModelName(rest);
-            const target = determineTarget(modelName, rest);
+            const target = determineTarget(req.id, modelName, rest);
 
             if (!modelName) {
                 req.logError(`Invalid or missing model name in request: ${bodyString}`);
