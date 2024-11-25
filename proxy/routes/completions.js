@@ -26,14 +26,10 @@ function handleCompletionRequest(req, res) {
     const traceConfigured = process.argv.indexOf('--trace') > -1;
     req.trace = traceRequest || traceConfigured;
 
-    console.log(`TRACE: ${req.trace}`);
-    console.log(`TRACE: ${process.argv}`);
-
     let body = [];
     req.on("data", (chunk) => body.push(chunk));
 
     req.on("end", async () => {
-
 
         try {
             body = Buffer.concat(body);

@@ -147,7 +147,7 @@ function recordTrace(requestId, stage, content) {
     }
     const traceFile = path.join(tracePath, `${stage}.json`);
     if (content instanceof Object) {
-        fs.writeFileSync(traceFile, JSON.stringify({ requestId, stage }, null, 2));
+        fs.writeFileSync(traceFile, JSON.stringify(content, null, 2));
     } else {
         fs.writeFileSync(traceFile, content);
     }
