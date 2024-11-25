@@ -54,7 +54,7 @@ function generateExpectedProcesses(config = null) {
 
     // Add proxy process if enabled
     if (config.enable_proxy) {
-        const webPort = config.port || 5000;
+        const webPort = config.proxy_port || 5000;
         const proxyProcessName = `proxy-${webPort}`;
         const proxyPath = __dirname + '/../proxy/proxyServer.js';
         const proxyCmd = ["node", proxyPath, webPort];
