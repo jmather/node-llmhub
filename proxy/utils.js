@@ -1,5 +1,15 @@
 const debug = require('debug')('proxy:utils');
 const axios = require('axios');
+const crypto = require("crypto");
+const mainUtils = require('../src/utils');
+const {expandUserPath} = require("../src/utils");
+const path = require("path");
+const fs = require("fs");
+
+
+function generateUuid() {
+    return crypto.randomUUID();
+}
 
 async function webRequest(target, data) {
     debug({ target, data }, 'Making request to OpenAI API');
@@ -58,16 +68,16 @@ function estimateTokens(payload) {
     return tokenCount;
 }
 
-function logAccess(message) {
+function logAccess(requestId, message) {
     const timestamp = new Date().toISOString();
-    const logEntry = `[Access] [${timestamp}] ${message}\n`;
-    console.log(logEntry.trim());
+    const logEntry = `[Access] [${timestamp}] [RequestID: ${requestId}] ${message}\n`;
+    console.log(logEntry.trim()); // Optional: Log to console for visibility
 }
 
-function logError(message) {
+function logError(requestId, message) {
     const timestamp = new Date().toISOString();
-    const logEntry = `[Error] [${timestamp}] ${message}\n`;
-    console.error(logEntry.trim());
+    const logEntry = `[Error] [${timestamp}] [RequestID: ${requestId}] ${message}\n`;
+    console.error(logEntry.trim()); // Optional: Log to console for visibility
 }
 
 /**
@@ -129,6 +139,21 @@ function extractModelName(payload) {
     return payload.model;
 }
 
+function recordTrace(requestId, stage, content) {
+    const basePath = expandUserPath("~/.llmhub/traces");
+    const tracePath = path.join(basePath, `${requestId}`);
+    if (! fs.existsSync(tracePath)) {
+        fs.mkdirSync(tracePath, { recursive: true });
+    }
+    const traceFile = path.join(tracePath, `${stage}.json`);
+    if (content instanceof Object) {
+        fs.writeFileSync(traceFile, JSON.stringify({ requestId, stage }, null, 2));
+    } else {
+        fs.writeFileSync(traceFile, content);
+    }
+
+}
+
 
 module.exports = {
     estimateTokens,
@@ -137,4 +162,6 @@ module.exports = {
     logError,
     determineTarget,
     extractModelName,
+    generateUuid,
+    recordTrace,
 };
